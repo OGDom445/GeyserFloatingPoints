@@ -12,6 +12,7 @@ import oxy.geyser.fp.session.GeyserFPUser;
 
 import java.util.ArrayList;
 import java.util.Optional;
+import oxy.geyser.fp.util.EntityPositionAccess;
 
 public class EntityPacketsRewriter implements JavaPacketListener {
     @Override
@@ -54,10 +55,7 @@ public class EntityPacketsRewriter implements JavaPacketListener {
         }
 
         if (event.getPacket() instanceof ClientboundEntityPositionSyncPacket packet) {
-            event.setPacket(new ClientboundEntityPositionSyncPacket(
-                    packet.getId(), packet.getPosition().sub(user.offset().toDouble()),
-                    packet.getDeltaMovement(), packet.getYRot(), packet.getXRot(), packet.isOnGround()
-            ));
+            event.setPacket(EntityPositionAccess.offset(packet, user.offset().toDouble()));
         }
 
         if (event.getPacket() instanceof ClientboundMoveVehiclePacket packet) {

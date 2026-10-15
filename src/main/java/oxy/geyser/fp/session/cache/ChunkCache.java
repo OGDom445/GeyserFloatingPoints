@@ -10,8 +10,8 @@ import org.cloudburstmc.math.vector.Vector3i;
 import org.geysermc.geyser.level.block.type.Block;
 import org.geysermc.geyser.registry.BlockRegistries;
 import org.geysermc.geyser.registry.Registries;
-import org.geysermc.geyser.session.cache.registry.JavaRegistries;
-import org.geysermc.geyser.session.cache.registry.JavaRegistry;
+import oxy.geyser.fp.util.RegistryAccess;
+
 import org.geysermc.geyser.util.MathUtils;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.ChunkSection;
@@ -40,7 +40,7 @@ public class ChunkCache {
             try {
                 for (int sectionY = 0; sectionY < this.getChunkHeightY(); sectionY++) {
                     MinecraftTypes.readChunkSection(oldByteBuf, BlockRegistries.BLOCK_STATES.get().size(),
-                            user.session().getRegistryCache().registry(JavaRegistries.BIOME).size());
+                            RegistryAccess.biomeCount(user.session()));
                 }
 
                 byteBuf = ByteBufAllocator.DEFAULT.ioBuffer();
@@ -97,8 +97,8 @@ public class ChunkCache {
 
         ChunkSection palette = column[(y - getMinY()) >> 4];
         if (palette == null) {
-            final JavaRegistry<Integer> registryKey = user.session().getRegistryCache().registry(JavaRegistries.BIOME);
-            column[(y - getMinY()) >> 4] = palette = new ChunkSection(Block.JAVA_AIR_ID, BlockRegistries.BLOCK_STATES.get().size(), registryKey.values().getFirst(), registryKey.size());
+            final int biomeCount = RegistryAccess.biomeCount(user.session());
+            column[(y - getMinY()) >> 4] = palette = new ChunkSection(Block.JAVA_AIR_ID, BlockRegistries.BLOCK_STATES.get().size(), 0, biomeCount);
         }
 
         for (BlockChangeEntry entry : packet.getEntries()) {
@@ -125,11 +125,11 @@ public class ChunkCache {
         ChunkSection section = chunk[(y - getMinY()) >> 4];
         if (section == null) {
             if (block != Block.JAVA_AIR_ID) {
-                final JavaRegistry<Integer> registryKey = user.session().getRegistryCache().registry(JavaRegistries.BIOME);
+                final int biomeCount = RegistryAccess.biomeCount(user.session());
 
                 // A previously empty chunk, which is no longer empty as a block has been added to it
                 // Fixes the chunk assuming that all blocks is the `block` variable we are updating. /shrug
-                section = new ChunkSection(Block.JAVA_AIR_ID, BlockRegistries.BLOCK_STATES.get().size(), registryKey.values().getFirst(), registryKey.size());
+                section = new ChunkSection(Block.JAVA_AIR_ID, BlockRegistries.BLOCK_STATES.get().size(), 0, biomeCount);
                 chunk[(y - getMinY()) >> 4] = section;
             } else {
                 // Nothing to update

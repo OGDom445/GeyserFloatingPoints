@@ -48,9 +48,8 @@ public class ActionPacketsRewriter implements JavaPacketListener {
         }
 
         if (event.getPacket() instanceof ServerboundSetJigsawBlockPacket packet) {
-            event.setPacket(new ServerboundSetJigsawBlockPacket(
-                    packet.getPosition().add(user.offset()), packet.getName(), packet.getTarget(), packet.getPool(),
-                    packet.getFinalState(), packet.getJointType(), packet.getSelectionPriority(), packet.getPlacementPriority()));
+            // Keep Geyser's platform-relocated key types inside the packet.
+            event.setPacket(packet.withPosition(packet.getPosition().add(user.offset())));
         }
 
         if (event.getPacket() instanceof ServerboundSetStructureBlockPacket packet) {
@@ -63,7 +62,7 @@ public class ActionPacketsRewriter implements JavaPacketListener {
         }
 
         if (event.getPacket() instanceof ServerboundSignUpdatePacket packet) {
-            event.setPacket(new ServerboundSignUpdatePacket(packet.getPosition().add(user.offset()), packet.getLines(), packet.isFrontText()));
+            event.setPacket(packet.withPosition(packet.getPosition().add(user.offset())));
         }
     }
 

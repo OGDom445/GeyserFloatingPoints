@@ -18,10 +18,12 @@ import oxy.geyser.fp.packets.PositionPacketsRewriter;
 import oxy.geyser.fp.packets.WorldPacketsRewriter;
 import oxy.geyser.fp.session.GeyserFPUser;
 import oxy.geyser.fp.util.GeyserUtil;
+import oxy.geyser.fp.util.RegistryAccess;
+import oxy.geyser.fp.util.EntityPositionAccess;
 import oxy.geyser.fp.util.config.Config;
 import oxy.geyser.fp.util.config.ConfigLoader;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 public class GeyserFloatingPoints implements Extension {
@@ -30,10 +32,12 @@ public class GeyserFloatingPoints implements Extension {
         return CONFIG;
     }
 
-    private static final Map<GeyserSession, GeyserFPUser> SESSION_TO_GFP = new HashMap<>();
+    private static final Map<GeyserSession, GeyserFPUser> SESSION_TO_GFP = new ConcurrentHashMap<>();
 
     @Subscribe
     public void onGeyserPostInitializeEvent(GeyserPostInitializeEvent event) {
+        RegistryAccess.validate();
+        EntityPositionAccess.validate();
         CONFIG = ConfigLoader.load(this, GeyserFloatingPoints.class, Config.class);
 
         PacketListenerRegistry.instance().register(new WorldPacketsRewriter());

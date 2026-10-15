@@ -3,7 +3,7 @@ package oxy.geyser.fp.packets;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.geysermc.geyser.registry.BlockRegistries;
-import org.geysermc.geyser.session.cache.registry.JavaRegistries;
+import oxy.geyser.fp.util.RegistryAccess;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.ChunkSection;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.BlockChangeEntry;
@@ -68,8 +68,13 @@ public class WorldPacketsRewriter implements JavaPacketListener {
             final int chunkSize = user.chunkCache().getChunkHeightY();
             final ChunkSection[] palette = new ChunkSection[chunkSize];
             final ByteBuf in = Unpooled.wrappedBuffer(packet.getChunkData());
-            for (int sectionY = 0; sectionY < chunkSize; sectionY++) {
-                palette[sectionY] = MinecraftTypes.readChunkSection(in, BlockRegistries.BLOCK_STATES.get().size(), user.session().getRegistryCache().registry(JavaRegistries.BIOME).size());
+            try {
+                int biomeCount = RegistryAccess.biomeCount(user.session());
+                for (int sectionY = 0; sectionY < chunkSize; sectionY++) {
+                    palette[sectionY] = MinecraftTypes.readChunkSection(in, BlockRegistries.BLOCK_STATES.get().size(), biomeCount);
+                }
+            } finally {
+                in.release();
             }
             user.chunkCache().addToCache(packet, palette);
 

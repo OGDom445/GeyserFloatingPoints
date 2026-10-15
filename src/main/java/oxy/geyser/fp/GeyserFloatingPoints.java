@@ -21,6 +21,7 @@ import oxy.geyser.fp.session.GeyserFPUser;
 import oxy.geyser.fp.util.GeyserUtil;
 import oxy.geyser.fp.util.RegistryAccess;
 import oxy.geyser.fp.util.EntityPositionAccess;
+import oxy.geyser.fp.util.TeleportConfirmationAccess;
 import oxy.geyser.fp.util.config.Config;
 import oxy.geyser.fp.util.config.ConfigLoader;
 
@@ -39,6 +40,7 @@ public class GeyserFloatingPoints implements Extension {
     public void onGeyserPostInitializeEvent(GeyserPostInitializeEvent event) {
         RegistryAccess.validate();
         EntityPositionAccess.validate();
+        TeleportConfirmationAccess.validate();
         CONFIG = ConfigLoader.load(this, GeyserFloatingPoints.class, Config.class);
 
         PacketListenerRegistry.instance().register(new WorldPacketsRewriter());

@@ -11,6 +11,7 @@ import org.geysermc.geyser.session.cache.WorldBorder;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.PositionElement;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player.ClientboundPlayerPositionPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level.ServerboundMoveVehiclePacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level.ServerboundAcceptTeleportationPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundMovePlayerPosPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundMovePlayerPosRotPacket;
 import oxy.geyser.fp.GeyserFloatingPoints;
@@ -18,12 +19,20 @@ import oxy.geyser.fp.network.event.JavaPacketEvent;
 import oxy.geyser.fp.network.listener.JavaPacketListener;
 import oxy.geyser.fp.session.GeyserFPUser;
 import oxy.geyser.fp.util.MathUtil;
+import oxy.geyser.fp.util.TeleportConfirmationAccess;
 
 import java.lang.reflect.Field;
 
 public class PositionPacketsRewriter implements JavaPacketListener {
     @Override
     public void onSend(GeyserFPUser user, JavaPacketEvent event) {
+        if(event.getPacket() instanceof ServerboundAcceptTeleportationPacket packet) {
+            // Since Java 26.3, acknowledging a teleport also reports the player's
+            // position. Geyser supplies the shifted local position; Java needs
+            // the original world position, just as for ordinary movement packets.
+            event.setPacket(TeleportConfirmationAccess.restore(packet,user.offset()));
+            return;
+        }
         if (event.getPacket() instanceof ServerboundMovePlayerPosPacket packet) {
             if (checkForReOffset(user, packet.getX(), packet.getY(), packet.getZ())) {
                 event.cancel();

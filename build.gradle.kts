@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "oxy.geyser.fp"
-version = "2.1.1-patched"
+version = "2.1.2-patched"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21

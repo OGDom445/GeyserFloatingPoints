@@ -82,6 +82,53 @@ public class CompatibilityCheck {
         }
     }
 
+    static void teleportChecks() throws Exception {
+        Class<?> packetClass=load("org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level.ServerboundAcceptTeleportationPacket");
+        Class<?> userClass=load("oxy.geyser.fp.session.GeyserFPUser");
+        Class<?> eventClass=load("oxy.geyser.fp.network.event.JavaPacketEvent");
+        Class<?> packetApi=load("org.geysermc.mcprotocollib.network.packet.Packet");
+        Class<?> vector=load("org.cloudburstmc.math.vector.Vector3i");
+        Class<?> unsafeClass=Class.forName("sun.misc.Unsafe");
+        Field unsafeField=unsafeClass.getDeclaredField("theUnsafe"); unsafeField.setAccessible(true);
+        Object user=unsafeClass.getMethod("allocateInstance",Class.class).invoke(unsafeField.get(null),userClass);
+        Field offset=userClass.getDeclaredField("offset"); offset.setAccessible(true);
+        Object rewriter=load("oxy.geyser.fp.packets.PositionPacketsRewriter").getConstructor().newInstance();
+        Method rewrite=rewriter.getClass().getMethod("onSend",userClass,eventClass);
+        Constructor<?> constructor;
+        try { constructor=packetClass.getConstructor(int.class,double.class,double.class,double.class,float.class,float.class); }
+        catch(NoSuchMethodException legacy) {
+            Object packet=packetClass.getConstructor(int.class).newInstance(17);
+            Object event=eventClass.getConstructor(packetApi).newInstance(packet);
+            rewrite.invoke(rewriter,user,event);
+            require(invoke(event,"getPacket",new Class<?>[0])==packet,"Legacy ID-only confirmation was changed");
+            roundTrip(packet);
+            System.out.println("PASS legacy ID-only teleport confirmation unchanged and wire round trip");
+            return;
+        }
+        // First pair reproduces the exact offset in the user's warning. The next
+        // pair differs by the second warning's 11,362,704 / 12,712,624-block jump.
+        int[][] offsets={{10542944,0,9291664},{21905648,0,22004288},{-10542944,0,-9291664},{0,0,0},{10542944,0,9291664},{0,0,0}};
+        double x=3.4398408,y=63,z=83.7837;
+        for(int n=0;n<offsets.length;n++) {
+            int[] delta=offsets[n];
+            offset.set(user,vector.getMethod("from",int.class,int.class,int.class).invoke(null,delta[0],delta[1],delta[2]));
+            Object original=constructor.newInstance(17+n,x,y,z,25f,-35f);
+            Object event=eventClass.getConstructor(packetApi).newInstance(original);
+            rewrite.invoke(rewriter,user,event);
+            Object translated=invoke(event,"getPacket",new Class<?>[0]);
+            require(invoke(translated,"getX",new Class<?>[0]).equals(x+delta[0]),"Teleport confirmation lost X offset "+delta[0]);
+            require(invoke(translated,"getY",new Class<?>[0]).equals(y),"Teleport confirmation changed Y");
+            require(invoke(translated,"getZ",new Class<?>[0]).equals(z+delta[2]),"Teleport confirmation lost Z offset "+delta[2]);
+            require(invoke(translated,"getId",new Class<?>[0]).equals(17+n),"Teleport confirmation changed ID");
+            require(invoke(translated,"getYRot",new Class<?>[0]).equals(25f),"Teleport confirmation changed yaw");
+            require(invoke(translated,"getXRot",new Class<?>[0]).equals(-35f),"Teleport confirmation changed pitch");
+            require(invoke(original,"getX",new Class<?>[0]).equals(x),"Mutated original confirmation");
+            require(invoke(event,"isCancelled",new Class<?>[0]).equals(false),"Cancelled teleport confirmation");
+            roundTrip(translated);
+        }
+        System.out.println("PASS actual outgoing teleport rewrite: reported offsets, distant-to-distant, negative, near-spawn, return trips, IDs/rotation, immutability and wire round trips");
+    }
+
     static void packetChecks() throws Exception {
         Class<?> vector = load("org.cloudburstmc.math.vector.Vector3d");
         Method from = vector.getMethod("from", double.class, double.class, double.class);
@@ -241,6 +288,7 @@ public class CompatibilityCheck {
             require(failures.isEmpty(), "Unresolved binary references: " + failures.size());
             System.out.println("PASS " + references + " external method/field references against " + args[1]);
             packetChecks();
+            teleportChecks();
         }
     }
 }

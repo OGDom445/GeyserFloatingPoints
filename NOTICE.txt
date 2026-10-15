@@ -1,0 +1,15 @@
+GeyserFloatingPoints unofficial compatibility fork
+Original project: https://github.com/oryxel1/GeyserFloatingPoints
+Original author: oryxel
+Upstream base: 9f242a371b4d8131f2034e07a0a9a41317fe36a5
+
+Modified by OGDom445 on October 15, 2026, with assistance from OpenAI Codex.
+Changes: Geyser 26.2/26.3 registry and entity packet compatibility, nullable
+stepped-position fix, packet-copy compatibility, cancellation and buffer fixes.
+See PATCH-NOTES.md for details. This fork is unofficial and does not claim
+endorsement by oryxel, GeyserMC, PaperMC, Mojang, or Microsoft.
+
+Distributed under the GNU General Public License version 3 (LICENSE).
+Corresponding modified source and build scripts are provided with the release.
+Existing upstream author credits and third-party notices remain intact.
+Bundled third-party dependency sources are included in dependency-sources.zip.

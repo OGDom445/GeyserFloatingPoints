@@ -1,3 +1,4 @@
+// Modified by OGDom445 on 2026-10-15: unofficial compatibility patch. GNU GPL v3; see LICENSE.
 package oxy.geyser.fp.network.wrapper;
 
 import lombok.RequiredArgsConstructor;

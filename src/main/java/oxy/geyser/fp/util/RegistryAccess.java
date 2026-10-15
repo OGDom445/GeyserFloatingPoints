@@ -1,3 +1,4 @@
+// Modified by OGDom445 on 2026-10-15: unofficial compatibility patch. GNU GPL v3; see LICENSE.
 package oxy.geyser.fp.util;
 
 import org.geysermc.geyser.session.GeyserSession;

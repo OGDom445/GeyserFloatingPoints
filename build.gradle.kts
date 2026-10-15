@@ -1,3 +1,4 @@
+// Modified by OGDom445 on 2026-10-15: unofficial compatibility patch. GNU GPL v3; see LICENSE.
 plugins {
     id("java")
     id("com.gradleup.shadow") version "9.4.1"
@@ -38,8 +39,25 @@ tasks {
     shadowJar {
         archiveFileName = "geyserfloatingpoints.jar"
 
+        from(rootProject.file("LICENSE")) {
+            into("META-INF")
+            rename { "LICENSE-GeyserFloatingPoints.txt" }
+        }
+        from(rootProject.file("NOTICE.txt")) {
+            into("META-INF")
+            rename { "NOTICE-GeyserFloatingPoints.txt" }
+        }
+
         relocate("org.yaml.snakeyaml", "oxy.geyser.fp.shaded.snakeyaml")
         relocate("com.fasterxml", "oxy.geyser.fp.shaded.fasterxml")
         relocate("it.unimi.dsi.fastutil", "oxy.geyser.fp.shaded.fastutil")
+    }
+}
+
+tasks.register("listBundledDependencies") {
+    doLast {
+        configurations.runtimeClasspath.get().resolvedConfiguration.resolvedArtifacts.forEach {
+            println("BUNDLED ${it.moduleVersion.id.group}:${it.name}:${it.moduleVersion.id.version}")
+        }
     }
 }

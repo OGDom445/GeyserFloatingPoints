@@ -1,5 +1,13 @@
+# Modified by OGDom445 on 2026-10-15: unofficial compatibility patch. GNU GPL v3; see LICENSE.
 $ErrorActionPreference = 'Stop'
 $project = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+Push-Location $project
+try {
+    & ./gradlew.bat clean shadowJar --console=plain
+    if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
+} finally {
+    Pop-Location
+}
 $scratch = Join-Path $project 'build/compatibility'
 $provided = Join-Path $scratch 'provided'
 New-Item -ItemType Directory -Force $scratch, $provided | Out-Null
@@ -21,8 +29,6 @@ Download-Checked "$maven/com/google/code/gson/gson/2.14.0/gson-2.14.0.jar" (Join
 
 Push-Location $project
 try {
-    & ./gradlew.bat clean shadowJar --console=plain
-    if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
     & javac --release 21 -cp $asm -d $scratch (Join-Path $PSScriptRoot 'CompatibilityCheck.java')
     if ($LASTEXITCODE -ne 0) { throw 'Harness compilation failed' }
     foreach ($target in @(

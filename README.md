@@ -1,3 +1,7 @@
+> **Unofficial compatibility fork maintained by OGDom445.** Original project and author: [oryxel1/GeyserFloatingPoints](https://github.com/oryxel1/GeyserFloatingPoints), by oryxel. This fork is not an official release or endorsed by the original creator.
+>
+> Modified October 15, 2026 with assistance from OpenAI Codex. Distributed under the [GNU GPL v3](LICENSE). See [PATCH-NOTES.md](PATCH-NOTES.md) for changes, installation, tested builds, and limitations. The release is a prerelease pending live gameplay verification.
+
 # GeyserFloatingPoints
 Workaround to fix floating-point precision on Bedrock when at high coordinate.
 
